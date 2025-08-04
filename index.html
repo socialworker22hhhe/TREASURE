@@ -5912,35 +5912,48 @@ function closePlayer() {
 }
 </script>
 <script>
-// 🚫 Disable Right Click
-document.addEventListener("contextmenu", e => e.preventDefault());
+// ✅ Allow normal use
+// 🚫 Block DevTools, Right-click-Inspect, or Page Injection
 
-// 🚫 Disable Keyboard Shortcuts
-document.addEventListener("keydown", function(e) {
+// 🔒 DevTools Detection (based on dimensions & console override)
+setInterval(() => {
   if (
-    e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key) ||
-    e.ctrlKey && e.key === "U" ||
-    e.key === "F12"
+    window.outerWidth - window.innerWidth > 160 ||
+    window.outerHeight - window.innerHeight > 160
   ) {
+    document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:20%;'>Developer tools are blocked 🔐</h2>";
+  }
+}, 1000);
+
+// 🚫 Right-click only if user tries to inspect
+document.addEventListener("contextmenu", function(e) {
+  if (e.target.nodeName === "HTML" || e.target.nodeName === "BODY") {
     e.preventDefault();
-    alert("Inspect is disabled 🔐");
-    return false;
+    alert("Inspecting structure is not allowed!");
+  }
+}, true);
+
+// 🔍 Detect new injected elements/scripts
+const observer = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
+      if (
+        node.tagName === "SCRIPT" ||
+        node.tagName === "IFRAME" ||
+        node.tagName === "LINK" ||
+        (node.nodeType === 1 && node.innerHTML && node.innerHTML.includes("<script"))
+      ) {
+        document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:20%;'>Tampering detected and blocked 🚫</h2>";
+        observer.disconnect();
+        break;
+      }
+    }
   }
 });
 
-// 🚫 Detect DevTools (basic)
-setInterval(() => {
-  const devtools = /./;
-  devtools.toString = function() {
-    document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:20%;'>Developer tools are blocked 🔐</h2>";
-  };
-  console.log(devtools);
-}, 1000);
-
-// 🚫 Disable copy, drag, selection
-document.onselectstart = () => false;
-document.ondragstart = () => false;
-document.oncopy = () => false;
-document.oncut = () => false;
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true
+});
 </script>
 </body></html>
