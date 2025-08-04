@@ -5911,4 +5911,36 @@ function closePlayer() {
   player.style.display = "none";
 }
 </script>
+<script>
+// 🚫 Disable Right Click
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+// 🚫 Disable Keyboard Shortcuts
+document.addEventListener("keydown", function(e) {
+  if (
+    e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key) ||
+    e.ctrlKey && e.key === "U" ||
+    e.key === "F12"
+  ) {
+    e.preventDefault();
+    alert("Inspect is disabled 🔐");
+    return false;
+  }
+});
+
+// 🚫 Detect DevTools (basic)
+setInterval(() => {
+  const devtools = /./;
+  devtools.toString = function() {
+    document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:20%;'>Developer tools are blocked 🔐</h2>";
+  };
+  console.log(devtools);
+}, 1000);
+
+// 🚫 Disable copy, drag, selection
+document.onselectstart = () => false;
+document.ondragstart = () => false;
+document.oncopy = () => false;
+document.oncut = () => false;
+</script>
 </body></html>
